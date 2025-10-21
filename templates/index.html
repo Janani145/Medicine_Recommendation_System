@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>CureGenie</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <style>
+      body {
+        background: linear-gradient(to right, #e3f2fd, #f8f9fa);
+        min-height: 100vh;
+      }
+      .card {
+        box-shadow: 0px 4px 15px rgba(0,0,0,0.1);
+        border-radius: 12px;
+        margin-bottom: 20px;
+        opacity: 0;
+        transform: translateY(20px);
+        animation: fadeInUp 0.6s forwards;
+      }
+      @keyframes fadeInUp {
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+      footer {
+        margin-top: 50px;
+        padding: 15px;
+        background: #212529;
+        color: white;
+        text-align: center;
+        border-top-left-radius: 12px;
+        border-top-right-radius: 12px;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-dark bg-dark">
+      <div class="container-fluid">
+        <a class="navbar-brand mx-auto fw-bold fs-3" href="#">CureGenie</a>
+      </div>
+    </nav>
+
+    <!-- Title -->
+    <div class="container text-center mt-4">
+      <h1 class="fw-bold">Your AI-powered Health Assistant</h1>
+      <p class="text-muted">Enter your symptoms to predict possible conditions</p>
+    </div>
+
+    <!-- Input Form -->
+    <div class="container mt-4" style="max-width: 700px;">
+      <div class="card p-4" style="opacity:1; transform:none;">
+        <form action="/predict" method="post" onsubmit="return validateForm()">
+          <div class="mb-3">
+            <label for="symptoms" class="form-label">Enter Symptoms:</label>
+            <input type="text" class="form-control" id="symptoms" name="symptoms"
+                   placeholder="e.g. itching, headache, cough" required>
+          </div>
+          <button type="button" id="startSpeechRecognition" class="btn btn-primary mb-3">
+            🎤 Start Speech Recognition
+          </button>
+          <div id="transcription" class="mb-3 text-muted"></div>
+          {% if message %}
+          <p class="text-danger">{{ message }}</p>
+          {% endif %}
+          <button type="submit" class="btn btn-danger w-100">Predict</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- Results Section -->
+    {% if predicted_disease %}
+    <div class="container mt-5" style="max-width: 900px;">
+      <h2 class="text-center mb-4">Prediction Results</h2>
+
+      <!-- Disease -->
+      <div class="card p-3">
+        <h5 class="card-title text-primary">Disease</h5>
+        <p class="card-text">• {{ predicted_disease }}</p>
+      </div>
+
+      <!-- Description -->
+      <div class="card p-3">
+        <h5 class="card-title text-primary">Description</h5>
+        <p class="card-text">• {{ dis_des }}</p>
+      </div>
+
+      <!-- Precautions -->
+      <div class="card p-3">
+        <h5 class="card-title text-primary">Precautions</h5>
+        {% for i in my_precautions %}
+          <p>• {{ i }}</p>
+        {% endfor %}
+      </div>
+
+      <!-- Medications -->
+      <div class="card p-3">
+        <h5 class="card-title text-primary">Medications</h5>
+        {% for med in medications %}
+          <p>• {{ med }}</p>
+        {% endfor %}
+      </div>
+
+
+      <!-- Diets -->
+      <div class="card p-3">
+        <h5 class="card-title text-primary">Recommended Diet</h5>
+        {% for diet in my_diet %}
+          <p>• {{ diet }}</p>
+        {% endfor %}
+      </div>
+
+      <!-- Workouts -->
+      <div class="card p-3">
+        <h5 class="card-title text-primary">Suggested Workouts</h5>
+        {% for wrk in workout %}
+          <p>• {{ wrk }}</p>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+
+    <!-- Footer -->
+    <footer>
+      <p>© 2025 CureGenie - Your AI Health Companion</p>
+    </footer>
+
+    <!-- Speech Recognition Script -->
+    <script>
+      function validateForm() {
+        let symptoms = document.getElementById("symptoms").value.trim();
+        if (symptoms === "") {
+          alert("⚠️ Please type your symptoms before predicting.");
+          return false;
+        }
+        return true;
+      }
+
+      const startSpeechRecognitionButton = document.getElementById('startSpeechRecognition');
+      const transcriptionDiv = document.getElementById('transcription');
+
+      startSpeechRecognitionButton.addEventListener('click', () => {
+        const recognition = new webkitSpeechRecognition();
+        recognition.lang = 'en-US';
+        recognition.onresult = function(event) {
+          const result = event.results[0][0].transcript;
+          transcriptionDiv.textContent = "You said: " + result;
+          document.getElementById('symptoms').value = result;
+        };
+        recognition.start();
+      });
+    </script>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js"></script>
+  </body>
+</html>
